@@ -1,12 +1,4 @@
 <?php
-//require_once "vendor/autoload.php"; -- Composer
-
-require_once "lib/Cleantalk.php";
-require_once "lib/CleantalkRequest.php";
-require_once "lib/CleantalkResponse.php";
-require_once "lib/CleantalkHelper.php";
-require_once "lib/CleantalkAPI.php";
-require_once "lib/cleantalk-php-patch.php";
 
 /**
  * Cleantalk example
@@ -18,12 +10,10 @@ require_once "lib/cleantalk-php-patch.php";
  *
 */
 
-use Cleantalk\CleantalkRequest;
-use Cleantalk\Cleantalk;
-use Cleantalk\CleantalkAPI;
+require_once (dirname(__FILE__) . '/cleantalk.class.php');
 
 // Take params from config
-$config_url = 'https://moderate.cleantalk.org';
+$config_url = 'http://moderate.cleantalk.ru';
 $auth_key = null; // Set Cleantalk auth key
 
 
@@ -37,7 +27,8 @@ $ct_request->sender_nickname = 'John Dow';
 $ct_request->example = str_repeat('Just text ', 10);
 $ct_request->agent = 'php-api';
 $ct_request->sender_ip = '178.32.183.43';
-$ct_request->event_token = isset($_POST['ct_bot_detector_event_token']) ? $_POST['ct_bot_detector_event_token'] : null;
+$ct_request->js_on = 1; # Site visitor has JavaScript
+$ct_request->submit_time = 12; # Seconds from start form filling till the form POST
 
 $ct = new Cleantalk();
 $ct->server_url = $config_url;
@@ -50,6 +41,5 @@ if ($ct_result->allow == 1) {
 } else {
     echo 'Comment blocked. Reason ' . $ct_result->comment;
 }
-echo "<br/>CleantalkAPI call example:<br/>";
-var_dump(CleantalkAPI::method__notice_validate_key('',''));
+
 ?>
