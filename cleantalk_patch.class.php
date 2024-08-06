@@ -744,30 +744,27 @@ class Cleantalk {
      * @param $host
      * @return array
      */
-    public function get_servers_ip($host)
-	{
+    public function get_servers_ip($host) {
+        $response = array();
         if (!isset($host))
-            return null;
+            return $response;
 
-        $servers = array();
-
-		// Get DNS records about URL
         if (function_exists('dns_get_record')) {
             $records = dns_get_record($host, DNS_A);
+
             if ($records !== FALSE) {
                 foreach ($records as $server) {
-                    $servers[] = $server;
+                    $response[] = $server;
                 }
             }
         }
 
-		// Another try if first failed
-        if (count($servers) == 0 && function_exists('gethostbynamel')) {
+        if (count($response) == 0 && function_exists('gethostbynamel')) {
             $records = gethostbynamel($host);
+
             if ($records !== FALSE) {
                 foreach ($records as $server) {
-                    $servers[] = array(
-						"ip" => $server,
+                    $response[] = array("ip" => $server,
                         "host" => $host,
                         "ttl" => $this->server_ttl
                     );
@@ -775,44 +772,43 @@ class Cleantalk {
             }
         }
 
-		// If couldn't get records
-        if (count($servers) == 0){
-			
-            $servers[] = array(
-				"ip" => null,
+        if (count($response) == 0) {
+            $response[] = array("ip" => null,
                 "host" => $host,
                 "ttl" => $this->server_ttl
             );
-		
-		// If records recieved
         } else {
-			
-            $tmp = array();
+            // $i - to resolve collisions with localhost
+            $i = 0;
+            $r_temp = array();
             $fast_server_found = false;
+            foreach ($response as $server) {
                 
-            foreach ($servers as $server) {
-				
+                // Do not test servers because fast work server found
                 if ($fast_server_found) {
-                    $ping = $this->max_server_timeout;
+                    $ping = $this->min_server_timeout; 
                 } else {
                     $ping = $this->httpPing($server['ip']);
                     $ping = $ping * 1000;
                 }
                 
-				$tmp[(int) $ping] = $server;
+                // -1 server is down, skips not reachable server
+                if ($ping != -1) {
+                    $r_temp[$ping + $i] = $server;
+                }
+                $i++;
                 
-				$fast_server_found = $ping < $this->min_server_timeout ? true : false;
-
+                if ($ping < $this->min_server_timeout) {
+                    $fast_server_found = true;
+                }
             }
-
-            if (count($tmp)){
-                ksort($tmp);
-                $response = $tmp;
+            if (count($r_temp)){
+                ksort($r_temp);
+                $response = $r_temp;
             }
-
         }
 
-        return empty($response) ? null : $response;
+        return $response;
     }
 
     /**
