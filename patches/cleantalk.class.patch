@@ -1,5 +1,5 @@
---- vendor/cleantalk/php-antispam/cleantalk.class.php	2015-05-18 23:41:10
-+++ orignial_patch/cleantalk.class.php	2024-08-06 21:52:30
+--- ../php-antispam/cleantalk.class.php	2015-05-18 23:41:10
++++ cleantalk.class.php	2024-08-06 21:52:30
 @@ -745,7 +745,7 @@
       * @return array
       */
